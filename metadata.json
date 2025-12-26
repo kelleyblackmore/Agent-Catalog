@@ -1,0 +1,5 @@
+{
+  "name": "PersonaAI - Agent Showcase",
+  "description": "A showcase of specialized AI agents powered by Gemini. Select from a variety of personas like Project Manager, Dungeon Master, or Coding Tutor to interact with distinct personalities.",
+  "requestFramePermissions": []
+}
