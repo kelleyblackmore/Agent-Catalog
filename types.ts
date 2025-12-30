@@ -10,6 +10,7 @@ export interface Agent {
   icon: LucideIcon;
   color: string;
   bgColor: string;
+  model?: string;
 }
 
 export interface Message {
@@ -18,6 +19,7 @@ export interface Message {
   text: string;
   timestamp: Date;
   isError?: boolean;
+  image?: string;
 }
 
 export interface ChatState {

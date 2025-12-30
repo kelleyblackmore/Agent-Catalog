@@ -23,8 +23,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ agent, onBack }) => {
         const parsed = JSON.parse(saved, (key, value) => 
           key === 'timestamp' ? new Date(value) : value
         );
-        // Clean up any incomplete streaming states (empty text)
-        return parsed.filter((m: Message) => m.text && m.text.trim() !== '');
+        // Clean up any incomplete streaming states (empty text and no image)
+        return parsed.filter((m: Message) => (m.text && m.text.trim() !== '') || m.image);
       }
     } catch (e) {
       console.warn("Failed to parse chat history", e);
@@ -54,7 +54,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ agent, onBack }) => {
   useEffect(() => {
     if (messages.length > 0) {
       // Filter out empty 'Thinking...' messages before saving
-      const messagesToSave = messages.filter(m => m.text && m.text.trim() !== '');
+      const messagesToSave = messages.filter(m => (m.text && m.text.trim() !== '') || m.image);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(messagesToSave));
     }
   }, [messages, STORAGE_KEY]);
@@ -64,10 +64,17 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ agent, onBack }) => {
     // Prepare history for the Gemini SDK
     // We strictly use the messages state which was initialized from localStorage
     const history = messages
-      .filter(m => !m.isError && m.text)
+      .filter(m => !m.isError && (m.text || m.image))
       .map(m => ({
         role: m.role,
-        parts: [{ text: m.text }]
+        parts: [
+            // If we have an image in history, we theoretically should pass it back, 
+            // but for now we only restore text context to the model to keep it simple,
+            // as the model generally remembers the context of the generation.
+            // If the user sent an image (not supported yet), we would need to send it.
+            // For model outputs, just the text is usually enough for context.
+            { text: m.text }
+        ]
       }));
 
     chatSessionRef.current = createAgentChat(agent, history);
@@ -109,12 +116,15 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ agent, onBack }) => {
     try {
       const stream = sendMessageStream(chatSessionRef.current, userText);
       let fullText = '';
+      let fullImage: string | undefined;
 
       for await (const chunk of stream) {
-        fullText += chunk;
+        if (chunk.text) fullText += chunk.text;
+        if (chunk.image) fullImage = chunk.image;
+
         setMessages(prev => 
           prev.map(msg => 
-            msg.id === modelMsgId ? { ...msg, text: fullText } : msg
+            msg.id === modelMsgId ? { ...msg, text: fullText, image: fullImage } : msg
           )
         );
       }
@@ -198,7 +208,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ agent, onBack }) => {
           ))
         )}
         
-        {isStreaming && messages.length > 0 && !messages[messages.length - 1].text && (
+        {isStreaming && messages.length > 0 && !messages[messages.length - 1].text && !messages[messages.length - 1].image && (
              <div className="flex items-center space-x-2 p-4 text-slate-400 text-sm animate-pulse">
                 <div className={`w-2 h-2 rounded-full ${agent.bgColor}`}></div>
                 <div className={`w-2 h-2 rounded-full ${agent.bgColor} delay-75`}></div>

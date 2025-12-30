@@ -15,7 +15,8 @@ import {
   Zap,
   Mic,
   Shirt,
-  FileCode
+  FileCode,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Agent } from './types';
 
@@ -105,6 +106,20 @@ export const AGENTS: Agent[] = [
     icon: Sword,
     color: 'text-purple-600',
     bgColor: 'bg-purple-100',
+  },
+  {
+    id: 'picasso',
+    name: 'Picasso',
+    role: 'Digital Artist',
+    description: 'Creates stunning digital art and images from your descriptions.',
+    systemInstruction: `You are Picasso, a visionary digital artist. You are creative, abstract, and passionate about visual arts.
+    When a user asks you to draw, paint, or create an image, you should use your image generation capabilities to produce it.
+    You can also discuss art styles, history, and techniques.`,
+    category: 'Creative & Entertainment',
+    icon: ImageIcon,
+    color: 'text-pink-600',
+    bgColor: 'bg-pink-100',
+    model: 'gemini-2.5-flash-image'
   },
   {
     id: 'detective',

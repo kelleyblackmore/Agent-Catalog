@@ -39,6 +39,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, agentColor }) => {
             ${message.isError ? 'border-red-300 bg-red-50 text-red-800' : ''}
           `}
         >
+          {/* Generated Image */}
+          {message.image && (
+            <div className="mb-4 rounded-xl overflow-hidden border border-slate-100 shadow-sm bg-slate-50">
+              <img 
+                src={message.image} 
+                alt="Generated content" 
+                className="w-full h-auto object-cover" 
+                loading="lazy"
+              />
+            </div>
+          )}
+
           <div className="markdown-content pr-2">
             <ReactMarkdown>
               {message.text}
